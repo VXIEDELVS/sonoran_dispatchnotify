@@ -359,7 +359,7 @@ if pluginConfig.enabled then
         for k, v in pairs(Active_Units) do
             if v == source then
                 debugLog(("Dropping %s from Active Units"):format(source))
-                Active_Units[k] == nil
+                Active_Units[k] = nil
                 return
             end
         end
