@@ -80,20 +80,6 @@ if pluginConfig.enabled then
         return nil
     end
 
-    local function getAssignedCalls(player)
-        local calls = {}
-        for k, v in pairs(CallList.activeCalls) do
-            if v.units then
-                for _, unit in pairs(v.units) do
-                    if unit.apiId1 == PlayerMapping[player] or unit.apiId2 == PlayerMapping[player] then
-                        table.insert(calls, v)
-                    end
-                end
-            end
-        end
-        return calls
-    end
-
     local CallerCache = {}
     
     local Caller = {
@@ -199,6 +185,9 @@ if pluginConfig.enabled then
     end)
 
     AddEventHandler("SonoranCAD::pushevents:IncomingCadCall", function(data)
+        if not pluginConfig.enableUnitNotify then
+            return
+        end
         table.insert(CallList.pendingCalls, data)
         local callId = data.callId
         for i=0, GetNumPlayerIndices()-1 do
@@ -208,16 +197,17 @@ if pluginConfig.enabled then
             local description = data.description
             local caller = data.caller
             local callId = data.callId
+            local calltype = (data.emergency and plugin.civilCallType ~= "") and pluginConfig.emergencyCallType or pluginConfig.civilCallType
             if IsPlayerOnDuty(player) then
-                if pluginConfig.notifyMethod == "pnotify" then
+                if pluginConfig.callerNotifyMethod == "pnotify" then
                     TriggerClientEvent("pNotify:SendNotification", player, {
-                        text = pluginConfig.incomingCallMessage:gsub("{location}", location):gsub("{description}", description):gsub("{caller}", caller):gsub("{callId}", callId),
+                        text = pluginConfig.incomingCallMessage:gsub("{location}", location):gsub("{description}", description):gsub("{caller}", caller):gsub("{callId}", callId):gsub("{command}", "/"..pluginConfig.commandName),
                         type = "error",
                         layout = "bottomcenter",
                         timeout = "10000"
                     })
-                elseif pluginConfig.notifyMethod == "chat" then
-                    TriggerClientEvent("chat:addMessage", player, {args = {"^0[ ^1911 ^0] ", pluginConfig.incomingCallMessage:gsub("{location}", location):gsub("{description}", description):gsub("{caller}", caller):gsub("{callId}", callId)}})
+                elseif pluginConfig.callerNotifyMethod == "chat" then
+                    TriggerClientEvent("chat:addMessage", player, {args = {("^0[ ^1%s ^0] "):format(pluginConfig.calltype), pluginConfig.incomingCallMessage:gsub("{location}", location):gsub("{description}", description):gsub("{caller}", caller):gsub("{callId}", callId):gsub("{command}", "/"..pluginConfig.commandName)}})
                 end
                 TriggerEvent("SonoranCAD::dispatchnotify:incomingCallForUnit", player, location, description, caller)
             else
@@ -228,12 +218,16 @@ if pluginConfig.enabled then
 
     registerApiType("NEW_DISPATCH", "emergency")
     registerApiType("ATTACH_UNIT", "emergency")
-    RegisterCommand("r911", function(source, args, rawCommand)
+    RegisterCommand(pluginConfig.commandName, function(source, args, rawCommand)
         local source = source
         local callId = args[1]
         if not IsPlayerOnDuty(source) then
             TriggerClientEvent("chat:addMessage", source, {args = {"^0[ ^1Error ^0] ", "You need to be on duty to use this command."}})
             print("not on duty")
+            return
+        end
+        if not pluginConfig.enableUnitResponse then
+            TriggerClientEvent("chat:addMessage", source, {args = {"^0[ ^1Error ^0] ", "Self dispatch is currently disabled."}})
             return
         end
         --Get the unit's primary identifier for the API call
@@ -290,7 +284,7 @@ if pluginConfig.enabled then
                                 description = callInfo.description, 
                                 isEmergency = callInfo.isEmergency,
                                 notes = "Officer responding",
-                                metaData = { callerApiId = nil, creatorApiId = identifier },
+                                metaData = { callerApiId = nil, creatorApiId = identifier, createdFromId = callInfo.callId },
                                 units = { identifier }
             }
             performApiRequest({payload}, "NEW_DISPATCH", function(resp)
@@ -314,6 +308,9 @@ if pluginConfig.enabled then
                 end
                 if player ~= nil then
                     TriggerClientEvent("SonoranCAD::dispatchnotify:CallAttach", player, data, unit)
+                    if not pluginConfig.enableCallerNotify then
+                        return
+                    end
                     local caller = findCaller(data.description, data.address)
                     if caller then
                         TriggerClientEvent("SonoranCAD::dispatchnotify:CallResponse", caller.playerId, unit.data.name)
@@ -354,6 +351,48 @@ if pluginConfig.enabled then
         end)
     end)
 
+    local PositionCache = {}
+
+    if pluginConfig.waypointType == "exact" then
+        CreateThread(function()
+            while true do
+                Wait(pluginConfig.locationFrequency * 1000)
+                TriggerClientEvent("SonoranCAD::dispatchnotify:GetCoordinates", -1)
+            end
+        end)
+
+        RegisterNetEvent("SonoranCAD::dispatchnotify:RecvCoordinates")
+        AddEventHandler("SonoranCAD::dispatchnotify:RecvCoordinates", function(coords)
+            PositionCache[source] = coords
+            debugLog(("Recieved coords from %s - x: %s y: %s z: %z"):format(source, coords.x, coords.y, coords.z))
+        end)
+
+        RegisterCommand(pluginConfig.unitResetGpsCommand, function(source, args, rawCommand)
+            local source = source
+            if not IsUnitOnDuty(source) then
+                return
+            end
+        end)
+    end
+
+    -- GPS fetcher
+    function GetLocationFromPlayer(player)
+        if pluginConfig.waypointType == "postal" then
+            if not IsPluginLoaded("postals") then
+                errorLog("GetLocationFromPlayer failed: Invalid configuration. Postals plugin is required when waypointType is set to postal.")
+                return nil
+            end
+            assert(PostalCache ~= nil, "Postals plugin error. Please check configuration.")
+            if PostalCache[player] ~= nil then
+                return PostalCache[player]
+            end
+        elseif pluginConfig.waypointType == "exact" then
+            return PositionCache[player]
+        else
+            return nil
+        end
+    end
+
     AddEventHandler("playerDropped", function(reason)
         local source = source
         for k, v in pairs(Active_Units) do
@@ -366,10 +405,22 @@ if pluginConfig.enabled then
     end)
 
     function IsPlayerOnDuty(player)
-        for k, v in pairs(Active_Units) do
-            if tostring(v) == tostring(player) then
+        if pluginConfig.unitDutyMethod == "incad" then
+            for k, v in pairs(Active_Units) do
+                if tostring(v) == tostring(player) then
+                    return true
+                end
+            end
+        elseif pluginConfig.unitDutyMethod == "permissions" then
+            if IsPlayerAceAllowed(player, "sonorancad.dispatchnotify") then
                 return true
             end
+        elseif pluginConfig.unitDutyMethod == "esxjob" then
+            --TODO
+        elseif pluginConfig.unitDutyMethod == "custom" then
+            return pluginConfig.unitDutyFunction(player)
+        else
+            errorLog("Invalid configuration in pluginConfig.unitDutyMethod.")
         end
         return false
     end
