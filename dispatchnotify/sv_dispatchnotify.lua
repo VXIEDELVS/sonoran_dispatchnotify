@@ -75,6 +75,13 @@ if pluginConfig.enabled then
 
     local function FindCallMatch(caller, location, description)
         for k, v in pairs(CommandCallMapping) do
+            if caller == "incad" then
+                if v.location == location and v.description == description then
+                    return k
+                else
+                    return nil
+                end
+            end
             if v.caller == caller and v.location == location and v.description == description then
                 return k
             elseif v.caller == caller and (v.location ~= location or v.description ~= description) then
@@ -293,16 +300,26 @@ if pluginConfig.enabled then
 
     local function attachUnitToCall(dispatchData, unit)
         local officerName = unit.data.name
-        local playerId = dispatchData.metaData.callerApiId
+        local playerId = nil
+        if dispatchData.metaData ~= nil then 
+            playerId = dispatchData.metaData.callerApiId
+        else
+            local match = FindCallMatch("incad", dispatchData.address, dispatchData.description)
+            if match ~= nil then
+                playerId = CommandCallMapping[match].player
+            end
+        end
         local officerApiId = unit.data.apiId1
         local officerId = GetPlayerByIdentifier(unit.data.apiId1)
-        if officerId ~= nil and playerId ~= nil then
+        if officerId ~= nil  then
             SendMessage("dispatch", officerId, ("You are now attached to call ^4%s^0. Description: ^4%s^0"):format(dispatchData.callId, dispatchData.description))
+        end
+        if playerId ~= nil then
             if pluginConfig.enableCallerNotify then
                 if pluginConfig.callerNotifyMethod == "chat" then
                     SendMessage("dispatch", playerId, pluginConfig.notifyMessage:gsub("{officer}", officerName))
                 elseif pluginConfig.callerNotifyMethod == "pnotify" then
-                    TriggerClientEvent("pNotify:SendNotification", player, {
+                    TriggerClientEvent("pNotify:SendNotification", playerId, {
                         text = pluginConfig.notifyMessage:gsub("{officer}", officerName),
                         type = "error",
                         layout = "bottomcenter",
@@ -316,7 +333,7 @@ if pluginConfig.enabled then
                 TriggerEvent("SonoranCAD::dispatchnotify:StartWaypoint", dispatchData.callId, playerId, officerId)
             end
         else
-            debugLog("Could not find officer or player ID.")
+            debugLog("Could not find player ID.")
         end
     end
 

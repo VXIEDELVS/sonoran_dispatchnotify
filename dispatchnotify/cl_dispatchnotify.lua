@@ -2,8 +2,8 @@
     Sonaran CAD Plugins
 
     Plugin Name: dispatchnotify
-    Creator: template
-    Description: Describe your plugin here
+    Creator: SonoranCAD
+    Description: Show incoming 911 calls and allow units to attach to them.
 
     Put all client-side logic in this file.
 ]]
