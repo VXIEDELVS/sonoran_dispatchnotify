@@ -33,7 +33,7 @@ local config = {
     --[[
         Command to respond to calls with
     ]]
-    commandName = "rcall",
+    respondCommandName = "rcall",
 
     --[[
         Enable call responding (self-dispatching)
@@ -88,13 +88,13 @@ local config = {
         Note: pNotify uses HTML (commented below), chat uses special codes.
     ]]
     --incomingCallMessage = "<b>Incoming Call!</b><br/>Location: {location}<br/>Description: {description}<br/>Use command /r911 <b>{callId}</b> to respond!",
-    incomingCallMessage = "Incoming call from ^*{caller}^r! Location: ^3{location}^0 Description: ^3{description}^0 - Use {command} ^*{callId}^r to respond!",
+    incomingCallMessage = "Incoming call from ^*{caller}^r! Location: ^3{location}^0 Description: ^3{description}^0 - Use /{command} ^*{callId}^r to respond!",
 
     --[[
         unitDutyMethod: How to detect if units are online?
             incad: units must be logged into the CAD
             permissions: units must have the "sonorancad.dispatchnotify" ACE permission (see docs)
-            esxjob: ESX server type only, detect based on current job
+            esxjob: ESX server type only, detect based on current job (NOT CURRENTLY SUPPORTED)
             custom: Use custom function (defined below)
     ]]
     unitDutyMethod = "incad",
@@ -114,17 +114,7 @@ local config = {
     --[[
         locationFrequency: how often in seconds to update players' coordinates. Ping less frequently on high population. Only for "exact" mode.
     ]]
-    locationFrequency = 10,
-
-    --[[
-        unitResetGpsCommand: Command that allows units to fetch a caller's location again if they accidentally unset it. Only returns initial GPS lock.
-    ]]
-    unitResetGpsCommand = "callgps",
-
-    --[[
-        closedCount: How many closed calls to keep in memory? Higher means more memory usage.
-    ]]
-    closedCount = 10
+    locationFrequency = 10
 
     
 

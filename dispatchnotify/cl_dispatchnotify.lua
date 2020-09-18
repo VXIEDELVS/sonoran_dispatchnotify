@@ -12,50 +12,52 @@ local pluginConfig = Config.GetPluginConfig("dispatchnotify")
 
 if pluginConfig.enabled then
 
-    local currentCall = nil
-    local lastCallDescription = nil
-
-    RegisterNetEvent("SonoranCAD::dispatchnotify:NewCall")
-    AddEventHandler("SonoranCAD::dispatchnotify:NewCall", function(data)
-        currentCall = data
-        if #data.dispatch.units > 0 then
-            local officer = data.dispatch.units[1].data.name
-            TriggerEvent("chat:addMessage", {args = {"^0^5^*[SonoranCAD]^r ", ("^7%s is responding to your call!"):format(officer)}})
-        end
-    end)
-
-    RegisterNetEvent("SonoranCAD::dispatchnotify:UpdateCall")
-    AddEventHandler("SonoranCAD::dispatchnotify:UpdateCall", function(call, unit)
-        if currentCall ~= nil then
-            debugLog(json.encode(unit))
-            local officer = unit.data.name
-            for k, unit in pairs(call.units) do
-                for k, v in pairs(currentCall.units) do
-                    if v.data.name == officer then
-                        return
-                    end
-                end
-            end
-        end
-        currentCall = call
-        TriggerEvent("chat:addMessage", {args = {"^0^5^*[SonoranCAD]^r ", ("^7%s is responding to your call!"):format(officer)}})
-    end)
-
-    RegisterNetEvent("SonoranCAD::dispatchnotify:CallResponse")
-    AddEventHandler("SonoranCAD::dispatchnotify:CallResponse", function(unitName)
-        TriggerEvent("chat:addMessage", {args = {"^0[ ^1911 ^0] ", pluginConfig.notifyMessage:gsub("{officer}", unitName)}})
-    end)
-
-    RegisterNetEvent("SonoranCAD::dispatchnotify:CallOk")
-    AddEventHandler("SonoranCAD::dispatchnotify:CallOk", function(description)
-        lastCallDescription = description
-    end)
+    local gpsLock = true
+    local lastGps = nil
 
     CreateThread(function()
         while not NetworkIsPlayerActive(PlayerId()) do
             Wait(10)
         end
-        TriggerServerEvent("SonoranCAD::dispatchnotify:UserJoined")
+        TriggerServerEvent("SonoranCAD::dispatchnotify:Joined")
+    end)
+
+    RegisterNetEvent("SonoranCAD::dispatchnotify:SetGps")
+    AddEventHandler("SonoranCAD::dispatchnotify:SetGps", function(postal, isUpdate)
+        -- try to set postal via command?
+        if gpsLock then
+            ExecuteCommand("postal "..tostring(postal))
+            if isUpdate then
+                TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", ("Call GPS coordinates updated (%s)."):format(postal)}})
+            else
+                TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", ("GPS coordinates set to caller's last known postal (%s)."):format(postal)}})
+            end
+        end
+    end)
+
+    RegisterNetEvent("SonoranCAD::dispatchnotify:GetCoordinates")
+    AddEventHandler("SonoranCAD::dispatchnotify:GetCoordinates", function()
+        local coords = GetEntityCoords(GetPlayerPed(-1))
+        TriggerServerEvent("SonoranCAD::dispatchnotify:RecvCoordinates", coords)
+    end)
+
+    RegisterNetEvent("SonoranCAD::dispatchnotify:GetPostal")
+    AddEventHandler("SonoranCAD::dispatchnotify:GetPostal", function()
+        local postal = getNearestPostal()
+        TriggerServerEvent("SonoranCAD::dispatchnotify:RecvPostal", postal)
+    end)
+
+    RegisterNetEvent("SonoranCAD::dispatchnotify:SetLocation")
+    AddEventHandler("SonoranCAD::dispatchnotify:SetLocation", function(coords)
+        if gpsLock then
+            SetNewWaypoint(coords.x, coords.y)
+            TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "GPS coordinates set to caller's last known location."}})
+        end
+    end)
+
+    RegisterCommand("togglegps", function(source, args, rawCommand)
+        gpsLock = not gpsLock
+        TriggerEvent("chat:addMessage", {args = {"^0[ ^2GPS ^0] ", ("GPS lock has been %s"):format(gpsLock and "enabled" or "disabled")}})
     end)
 
 end
