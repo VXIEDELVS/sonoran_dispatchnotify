@@ -333,26 +333,35 @@ if pluginConfig.enabled then
         if officerId ~= nil  then
             SendMessage("dispatch", officerId, ("You are now attached to call ^4%s^0. Description: ^4%s^0"):format(dispatchData.callId, dispatchData.description))
         end
-        if playerId ~= nil then
-            if pluginConfig.enableCallerNotify then
-                if pluginConfig.callerNotifyMethod == "chat" then
-                    SendMessage("dispatch", playerId, pluginConfig.notifyMessage:gsub("{officer}", officerName))
-                elseif pluginConfig.callerNotifyMethod == "pnotify" then
-                    TriggerClientEvent("pNotify:SendNotification", playerId, {
-                        text = pluginConfig.notifyMessage:gsub("{officer}", officerName),
-                        type = "error",
-                        layout = "bottomcenter",
-                        timeout = "10000"
-                    })
-                elseif pluginConfig.callerNotifyMethod == "custom" then
-                    TriggerEvent("SonoranCAD::dispatchnotify:UnitAttach", dispatchData.callId, playerId, officerId, officerName)
-                end
-            end
-            if pluginConfig.waypointType ~= "none" then
-                TriggerEvent("SonoranCAD::dispatchnotify:StartWaypoint", dispatchData.callId, playerId, officerId)
+        if pluginConfig.enableCallerNotify and playerId ~= nil then
+            if pluginConfig.callerNotifyMethod == "chat" then
+                SendMessage("dispatch", playerId, pluginConfig.notifyMessage:gsub("{officer}", officerName))
+            elseif pluginConfig.callerNotifyMethod == "pnotify" then
+                TriggerClientEvent("pNotify:SendNotification", playerId, {
+                    text = pluginConfig.notifyMessage:gsub("{officer}", officerName),
+                    type = "error",
+                    layout = "bottomcenter",
+                    timeout = "10000"
+                })
+            elseif pluginConfig.callerNotifyMethod == "custom" then
+                TriggerEvent("SonoranCAD::dispatchnotify:UnitAttach", dispatchData.callId, playerId, officerId, officerName)
             end
         else
             debugLog("Could not find player ID.")
+        end
+
+        if pluginConfig.waypointType == "postal" then
+            if dispatchData.postal ~= nil and dispatchData.postal ~= "" then
+                TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, dispatchData.postal)
+            end
+        elseif pluginConfig.waypointType == "exact" then
+            if LocationCache[callerId] ~= nil and playerId ~= nil then
+                TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, LocationCache[playerId])
+            elseif pluginConfig.waypointType == "exact" and pluginConfig.waypointFallbackEnabled then
+                if dispatchData.postal ~= nil and dispatchData.postal ~= "" then
+                    TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, dispatchData.postal)
+                end
+            end
         end
     end
 
