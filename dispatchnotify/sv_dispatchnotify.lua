@@ -69,14 +69,24 @@ if pluginConfig.enabled then
         elseif pluginConfig.unitDutyMethod == "esx" and Config.serverType == "esx" then
             assert(false, "ESX mode currently not supported.")
         elseif pluginConfig.unitDutyMethod == "custom" then
-            return pluginConfig.unitDutyFunction(player)
+            return unitDutyCustom(player)
         end
     end
 
     local function FindCallMatch(caller, location, description)
         for k, v in pairs(CommandCallMapping) do
             if caller == "incad" then
-                if v.location == location and v.description == description then
+                local l = 1
+                local desc = description
+                for line in description:gmatch("([^\n]*)\n?") do
+                    if l == 3 then
+                        desc = line
+                        break
+                    else
+                        l = l + 1
+                    end
+                end
+                if v.location == location and v.description == desc then
                     return k
                 else
                     return nil
@@ -195,6 +205,7 @@ if pluginConfig.enabled then
                 local callerApiId = GetIdentifiers(callerId)[Config.primaryIdentifier]
                 table.insert(CallerMapping, {playerId = player, apiId = callerApiId, iCallId = call.callId, callId = nil})
                 debugLog(("Found matching incoming call from %s. Mapped to %s."):format(callerId, call.callId))
+                CommandCallMapping[match].iCallId = call.callId
             else
                 debugLog(("Could not locate caller source for call ID %s from %s."):format(call.callId, call.caller))
             end
@@ -205,10 +216,18 @@ if pluginConfig.enabled then
         if pluginConfig.enableUnitNotify then
             local type = call.emergency and pluginConfig.civilCallType or pluginConfig.emergencyCallType
             local message = pluginConfig.incomingCallMessage:gsub("{caller}", call.caller):gsub("{location}", call.location):gsub("{description}", call.description):gsub("{callId}", call.callId):gsub("{command}", pluginConfig.respondCommandName)
-            if pluginConfig.unitNotifyMethod == "chat" then
-                for k, v in pairs(PlayerCache) do
-                    if IsPlayerOnDuty(k) then
+        
+            for k, v in pairs(PlayerCache) do
+                if IsPlayerOnDuty(k) then
+                    if pluginConfig.unitNotifyMethod == "chat" then
                         SendMessage(type, k, message)
+                    elseif pluginConfig.unitNotifyMethod == "pnotify" then
+                        TriggerClientEvent("pNotify:SendNotification", k, {
+                            text = message,
+                            type = "error",
+                            layout = "bottomcenter",
+                            timeout = "10000"
+                        })
                     end
                 end
             end
@@ -342,6 +361,16 @@ if pluginConfig.enabled then
         local dispatchType = data.dispatch_type
         local dispatchData = data.dispatch
         local metaData = data.dispatch.metaData
+        if metaData == nil then
+            local match = FindCallMatch("incad", dispatchData.address, dispatchData.description)
+            if match then
+                metaData = {}
+                metaData["createdFromId"] = CommandCallMapping[match].player
+                debugLog(("Automapping callId %s to match %s"):format(dispatchData.callId, match))
+            else
+                metaData = {}
+            end
+        end
         if dispatchType ~= tostring(dispatchType) then
             -- hmm, expected a string, got a number
             dispatchType = DISPATCH_TYPE[data.dispatch_type+1]
@@ -355,15 +384,23 @@ if pluginConfig.enabled then
                 if metaData.createdFromId ~= nil then
                     if CallMapping[metaData.createdFromId] == false then
                         CallMapping[metaData.createdFromId] = dispatchData.callId
-                        debugLog("Found matching 911 call %s, associating %s with it."):format(metaData.createdFromId, dispatchData.callId)
+                        debugLog(("Found matching 911 call %s, associating %s with it."):format(metaData.createdFromId, dispatchData.callId))
                     end
                 else
-                    errorLog(("Failed to process incoming call %s, was it processed by the integration? (missing createdFromId)"):format(dispatchData.callId))
-                    assert(false, "Cannot process this call. Aborted.")
+                    warnLog(("Failed to process incoming call %s, was it processed by the integration? (missing createdFromId)"):format(dispatchData.callId))
+                    return
                 end
                 -- find the caller player
                 local mapId = GetCallerMapping(metaData.createdFromId)
-                assert(mapId ~= nil, "Failed to process call as we could not find the caller. Ignored.")
+                if mapId == nil then
+                    -- alternate method, call didn't come from the integration
+                    local match = FindCallMatch("incad", dispatchData.address, dispatchData.description)
+                    if match ~= nil then
+                        mapId = GetCallerMapping(CommandCallMapping[match].iCallId)
+                    else
+                        assert(false, "Failed to process call as we could not find the caller. Ignored.")
+                    end
+                end
                 local callerId = CallerMapping[mapId].playerId
                 CallerMapping[mapId].callId = dispatchData.callId
                 -- for every unit we find, alert both caller and unit, if configured
