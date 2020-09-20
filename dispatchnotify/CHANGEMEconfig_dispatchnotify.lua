@@ -95,13 +95,9 @@ local config = {
             incad: units must be logged into the CAD
             permissions: units must have the "sonorancad.dispatchnotify" ACE permission (see docs)
             esxjob: ESX server type only, detect based on current job (NOT CURRENTLY SUPPORTED)
-            custom: Use custom function (defined below)
+            custom: Use custom function (defined below, see unitDutyCustom)
     ]]
     unitDutyMethod = "incad",
-
-    unitDutyFunction = function(player) 
-        return false 
-    end,
 
     --[[
         waypointType: Type of waypoint to use when officer is attached
@@ -121,5 +117,10 @@ local config = {
 }
 
 if config.enabled then
+
+    function unitDutyCustom(player)
+        return false
+    end
+
     Config.RegisterPluginConfig(config.pluginName, config)
 end
