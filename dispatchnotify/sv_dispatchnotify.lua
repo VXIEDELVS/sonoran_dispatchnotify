@@ -28,6 +28,7 @@ if pluginConfig.enabled then
 
     local UnitCache = {}
     local PostalCache = {}
+    local CallUnitMapping = {}
 
     local function SendMessage(type, source, message)
         if type == "dispatch" then
@@ -332,6 +333,7 @@ if pluginConfig.enabled then
         local officerId = GetPlayerByIdentifier(unit.data.apiId1)
         if officerId ~= nil  then
             SendMessage("dispatch", officerId, ("You are now attached to call ^4%s^0. Description: ^4%s^0"):format(dispatchData.callId, dispatchData.description))
+            CallUnitMapping[unit.id] = dispatchData.callId
         end
         if pluginConfig.enableCallerNotify and playerId ~= nil then
             if pluginConfig.callerNotifyMethod == "chat" then
@@ -515,8 +517,12 @@ if pluginConfig.enabled then
     AddEventHandler("SonoranCAD::dispatchnotify:CallEdit:NewUnit", function(callId, dispatchData, unit)
         attachUnitToCall(dispatchData, unit)
     end)
-    AddEventHandler("SonoranCAD::dispatchnotify:CallEdit:RemoveUnit", function(callId, unit)
-    
+    AddEventHandler("SonoranCAD::pushevents:DispatchClear", function(unit)
+        local callId = CallUnitMapping[unit.id]
+        local officerId = GetPlayerByIdentifier(unit.data.apiId1)
+        if officerId ~= nil and callId ~= nil then
+            SendMessage("dispatch", officerId, ("You were detached from call %s."):format(callId))
+        end
     end)
     
 end
