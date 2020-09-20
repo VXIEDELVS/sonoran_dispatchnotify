@@ -356,15 +356,16 @@ if pluginConfig.enabled then
             if dispatchData.postal ~= nil and dispatchData.postal ~= "" then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, dispatchData.postal)
             end
-        elseif pluginConfig.waypointType == "exact" then
+        elseif pluginConfig.waypointType == "exact" and callerId ~= nil then
             if LocationCache[callerId] ~= nil and playerId ~= nil then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, LocationCache[playerId])
-            elseif pluginConfig.waypointType == "exact" and pluginConfig.waypointFallbackEnabled then
+            elseif pluginConfig.waypointFallbackEnabled then
                 if dispatchData.postal ~= nil and dispatchData.postal ~= "" then
+                    debugLog("Running fallback, set postal")
                     TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, dispatchData.postal)
                 end
             end
-        end
+         end
     end
 
     RegisterServerEvent("SonoranCAD::pushevents:DispatchEvent")

@@ -105,7 +105,12 @@ local config = {
             exact: set gps to caller's position (less realistic)
             none: disable waypointing
     ]]
-    waypointType = "postal",
+    waypointType = "exact",
+
+    --[[
+        waypointFallbackEnabled: Fall back to postal if exact coordinates cannot be found (for self-generated calls)
+    ]]
+    waypointFallbackEnabled = true,
 
     --[[
         locationFrequency: how often in seconds to update players' coordinates. Ping less frequently on high population. Only for "exact" mode.
