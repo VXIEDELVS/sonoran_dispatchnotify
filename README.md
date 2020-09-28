@@ -1,3 +1,3 @@
 # sonoran_dispatchnotify
 
-CURRENTLY UNDER TESTING. USE AT YOUR OWN RISK. NO DOCUMENTATION IS AVAILABLE YET.
+See [this](https://info.sonorancad.com/integration-plugins/integration-plugins/available-plugins/dispatch-notify) for documentation.
