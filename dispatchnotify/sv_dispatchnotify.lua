@@ -362,7 +362,7 @@ if pluginConfig.enabled then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, dispatchData.postal)
             end
         elseif pluginConfig.waypointType == "exact" and callerId ~= nil then
-            if LocationCache[callerId] ~= nil and playerId ~= nil then
+            if LocationCache[playerId] ~= nil and playerId ~= nil then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, LocationCache[playerId])
             elseif pluginConfig.waypointFallbackEnabled then
                 if dispatchData.postal ~= nil and dispatchData.postal ~= "" then
