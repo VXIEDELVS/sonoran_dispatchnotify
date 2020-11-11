@@ -67,8 +67,13 @@ if pluginConfig.enabled then
             end
         elseif pluginConfig.unitDutyMethod == "permissions" then
             return IsPlayerAceAllowed(player, "sonorancad.dispatchnotify")
-        elseif pluginConfig.unitDutyMethod == "esx" and Config.serverType == "esx" then
-            assert(false, "ESX mode currently not supported.")
+        elseif pluginConfig.unitDutyMethod == "esx" then
+            assert(isPluginLoaded("esxsupport"), "esxsupport plugin is required to use the esx on duty method.")
+            if esxJobsAllowed[GetCurrentJob(player)] then
+                return true
+            else
+                return false
+            end
         elseif pluginConfig.unitDutyMethod == "custom" then
             return unitDutyCustom(player)
         end

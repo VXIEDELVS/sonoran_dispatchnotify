@@ -94,10 +94,19 @@ local config = {
         unitDutyMethod: How to detect if units are online?
             incad: units must be logged into the CAD
             permissions: units must have the "sonorancad.dispatchnotify" ACE permission (see docs)
-            esxjob: ESX server type only, detect based on current job (NOT CURRENTLY SUPPORTED)
-            custom: Use custom function (defined below, see unitDutyCustom)
+            esxjob: requires esxsupport plugin, use jobs instead for on duty detection
+            custom: Use custom function (defined below as unitDutyCustom)
     ]]
     unitDutyMethod = "incad",
+
+    --[[
+        esxJobsAllowed: What jobs should count as being on duty?
+    ]]
+    esxJobsAllowed = {
+        ["police"] = true,
+        ["ambulance"] = true,
+        ["fire"] = true
+    },
 
     --[[
         waypointType: Type of waypoint to use when officer is attached
