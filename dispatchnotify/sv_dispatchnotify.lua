@@ -246,6 +246,7 @@ if pluginConfig.enabled then
     --Officer response
     registerApiType("NEW_DISPATCH", "emergency")
     registerApiType("ATTACH_UNIT", "emergency")
+    registerApiType("REMOVE_911", "emergency")
     RegisterCommand(pluginConfig.respondCommandName, function(source, args, rawCommand)
         local source = source
         if not pluginConfig.enableUnitResponse then
@@ -306,6 +307,12 @@ if pluginConfig.enabled then
             performApiRequest({payload}, "NEW_DISPATCH", function(resp)
                 debugLog("Call creation OK")
                 SendMessage("debug", source, "You have been attached to the call.")
+
+                -- remove the 911 call
+                local payload = { callId = call.callId }
+                performApiRequest({payload}, "REMOVE_911", function(resp)
+                    debugLog("Remove status: "..tostring(resp))
+                end)
             end)
         else
             -- Call already exists
