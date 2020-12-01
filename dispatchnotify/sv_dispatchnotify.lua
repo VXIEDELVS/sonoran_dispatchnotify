@@ -219,7 +219,7 @@ if pluginConfig.enabled then
             end
         end
 
-        CallMapping[call.callId] = false
+        CallMapping[tostring(call.callId)] = false
         
         if pluginConfig.enableUnitNotify then
             local type = call.emergency and pluginConfig.civilCallType or pluginConfig.emergencyCallType
@@ -277,8 +277,10 @@ if pluginConfig.enabled then
             callerIdentifiers = GetIdentifiers(callerInfo.playerId)[Config.primaryIdentifier]
         end
         -- Responding to the call
-        local currentCall = CallMapping[call.callId] 
-        if currentCall == false then
+        debugLog("CallMapping (NEW_DISPATCH): "..json.encode(CallMapping))
+        debugLog("CallId: "..tostring(call.callId))
+        local currentCall = CallMapping[tostring(call.callId)] 
+        if currentCall == nil or currentCall == false then
             -- no mapped call, create a new one
             debugLog(("Creating new call request...(no mapped call for %s_"):format(call.callId))
             local postal = ""
@@ -317,7 +319,7 @@ if pluginConfig.enabled then
         else
             -- Call already exists
             debugLog("Found Call. Attaching!")
-            local data = {callId = currentCall.callId, units = {identifiers}}
+            local data = {callId = currentCall, units = {identifiers}, serverId = Config.serverId}
             performApiRequest({data}, "ATTACH_UNIT", function(res)
                 debugLog("Attach OK: "..tostring(res))
                 SendMessage("debug", source, "You have been attached to the call.")
@@ -407,6 +409,7 @@ if pluginConfig.enabled then
                 if CallCache[dispatchData.callId] == nil then
                     CallCache[dispatchData.callId] = dispatchData
                 end
+                debugLog("CallMapping: "..json.encode(CallMapping))
                 if metaData.createdFromId ~= nil then
                     if CallMapping[tostring(metaData.createdFromId)] == false or CallMapping[tostring(metaData.createdFromId)] == nil then
                         CallMapping[tostring(metaData.createdFromId)] = dispatchData.callId
