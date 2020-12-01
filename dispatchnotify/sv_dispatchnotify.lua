@@ -280,7 +280,7 @@ if pluginConfig.enabled then
         local currentCall = CallMapping[call.callId] 
         if currentCall == false then
             -- no mapped call, create a new one
-            debugLog("Creating new call request...")
+            debugLog(("Creating new call request...(no mapped call for %s_"):format(call.callId))
             local postal = ""
             if isPluginLoaded("postals") and callerInfo.playerId ~= nil then
                 if PostalCache[tostring(callerInfo.playerId)] ~= nil then
@@ -408,9 +408,12 @@ if pluginConfig.enabled then
                     CallCache[dispatchData.callId] = dispatchData
                 end
                 if metaData.createdFromId ~= nil then
-                    if CallMapping[metaData.createdFromId] == false then
+                    if CallMapping[metaData.createdFromId] == false or CallMapping[metaData.createdFromId] == nil then
                         CallMapping[metaData.createdFromId] = dispatchData.callId
                         debugLog(("Found matching 911 call %s, associating %s with it."):format(metaData.createdFromId, dispatchData.callId))
+                    else
+                        debugLog(("CallMapping entry exists and has value %s, we wanted to insert value %s."):format(CallMapping[metaData.createdFromId], dispatchData.callId))
+                        CallMapping[metaData.createdFromId] = dispatchData.callId
                     end
                 else
                     warnLog(("Failed to process incoming call %s, was it processed by the integration? (missing createdFromId)"):format(dispatchData.callId))
