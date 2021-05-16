@@ -13,44 +13,35 @@ local pluginConfig = Config.GetPluginConfig("dispatchnotify")
 if pluginConfig.enabled then
 
     local gpsLock = true
-    local lastGps = nil
-
-    CreateThread(function()
-        while not NetworkIsPlayerActive(PlayerId()) do
-            Wait(10)
-        end
-        TriggerServerEvent("SonoranCAD::dispatchnotify:Joined")
-    end)
+    local lastPostal = nil
+    local lastCoords = nil
 
     RegisterNetEvent("SonoranCAD::dispatchnotify:SetGps")
-    AddEventHandler("SonoranCAD::dispatchnotify:SetGps", function(postal, isUpdate)
+    AddEventHandler("SonoranCAD::dispatchnotify:SetGps", function(postal)
         -- try to set postal via command?
         if gpsLock then
             ExecuteCommand("postal "..tostring(postal))
-            if isUpdate then
+            if lastPostal ~= nil and lastPostal ~= postal then
                 TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", ("Call GPS coordinates updated (%s)."):format(postal)}})
+                lastPostal = postal
             else
+                lastPostal = postal
                 TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", ("GPS coordinates set to caller's last known postal (%s)."):format(postal)}})
             end
         end
-    end)
-
-    RegisterNetEvent("SonoranCAD::dispatchnotify:GetCoordinates")
-    AddEventHandler("SonoranCAD::dispatchnotify:GetCoordinates", function()
-        local coords = GetEntityCoords(GetPlayerPed(-1))
-        TriggerServerEvent("SonoranCAD::dispatchnotify:RecvCoordinates", coords)
-    end)
-
-    RegisterNetEvent("SonoranCAD::dispatchnotify:GetPostal")
-    AddEventHandler("SonoranCAD::dispatchnotify:GetPostal", function()
-        local postal = getNearestPostal()
-        TriggerServerEvent("SonoranCAD::dispatchnotify:RecvPostal", postal)
     end)
 
     RegisterNetEvent("SonoranCAD::dispatchnotify:SetLocation")
     AddEventHandler("SonoranCAD::dispatchnotify:SetLocation", function(coords)
         if gpsLock then
             SetNewWaypoint(coords.x, coords.y)
+            if lastCoords ~= nil then
+                if lastCoords.x == coords.x and lastCoords.y == coords.y then
+                    TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "GPS coordinates have been updated."}})
+                    return
+                end
+            end
+            lastCoords = coords
             TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "GPS coordinates set to caller's last known location."}})
         end
     end)

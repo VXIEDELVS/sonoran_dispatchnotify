@@ -8,7 +8,7 @@
 ]]
 local config = {
     enabled = false,
-    configVersion = "1.0",
+    configVersion = "1.1",
     pluginName = "dispatchnotify", -- name your plugin here
     pluginAuthor = "SonoranCAD", -- author
     requiresPlugins = {"callcommands", "pushevents"}, -- required plugins for this plugin to work, separated by commas
@@ -41,6 +41,11 @@ local config = {
         If disabled, running commandName will return an error to the unit
     ]]
     enableUnitResponse = true,
+
+    --[[
+        If a dispatcher is detected to be online, automatically disable the response command.
+    ]]
+    dispatchDisablesSelfResponse = true,
 
     --[[
         Enable "units are on the way" notifications
@@ -114,20 +119,12 @@ local config = {
             exact: set gps to caller's position (less realistic)
             none: disable waypointing
     ]]
-    waypointType = "exact",
+    waypointType = "postal",
 
     --[[
         waypointFallbackEnabled: Fall back to postal if exact coordinates cannot be found (for self-generated calls)
     ]]
-    waypointFallbackEnabled = true,
-
-    --[[
-        locationFrequency: how often in seconds to update players' coordinates. Ping less frequently on high population. Only for "exact" mode.
-    ]]
-    locationFrequency = 10
-
-    
-
+    waypointFallbackEnabled = true
 }
 
 if config.enabled then
