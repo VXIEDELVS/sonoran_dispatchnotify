@@ -45,7 +45,7 @@ local config = {
     --[[
         If a dispatcher is detected to be online, automatically disable the response command.
     ]]
-    dispatchDisablesSelfResponse = true,
+    dispatchDisablesSelfResponse = false,
 
     --[[
         Enable "units are on the way" notifications
