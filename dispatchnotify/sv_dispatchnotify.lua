@@ -314,8 +314,6 @@ if pluginConfig.enabled then
     end)
 
     AddEventHandler("SonoranCAD::pushevents:DispatchEdit", function(before, after)
-        print("before "..json.encode(before))
-        print("after "..json.encode(after))
         if before.dispatch.postal ~= after.dispatch.postal then
             print("trigger")
             TriggerEvent("SonoranCAD::dispatchnotify:CallEdit:Postal", after.dispatch.callId, after.dispatch.postal)
