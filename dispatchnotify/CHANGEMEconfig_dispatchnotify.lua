@@ -8,7 +8,7 @@
 ]]
 local config = {
     enabled = false,
-    configVersion = "1.1",
+    configVersion = "2.0",
     pluginName = "dispatchnotify", -- name your plugin here
     pluginAuthor = "SonoranCAD", -- author
     requiresPlugins = {"callcommands", "pushevents"}, -- required plugins for this plugin to work, separated by commas
