@@ -303,7 +303,7 @@ if pluginConfig.enabled then
                 for k, id in pairs(dispatchData.idents) do
                     local unit = GetUnitCache()[GetUnitById(id)]
                     if not unit then
-                        debugLog(("Failed to attach unit as I couldn't find them. Idents: %s"):format(json.encode(dispatchData.idents)))
+                        debugLog(("Failed to attach unit as I couldn't find them. Idents: % - Unit: %s"):format(json.encode(dispatchData.idents, GetUnitById(id))))
                     else
                         local officerId = GetSourceByApiId(unit.data.apiIds)
                         TriggerEvent("SonoranCAD::pushevents:UnitAttach", data, unit)
