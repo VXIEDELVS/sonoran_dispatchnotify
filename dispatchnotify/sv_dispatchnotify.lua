@@ -286,8 +286,12 @@ if pluginConfig.enabled then
                 local emergencyId = dispatchData.metaData.createdFromId
                 for k, id in pairs(dispatchData.idents) do
                     local unit = GetUnitCache()[GetUnitById(id)]
-                    local officerId = GetSourceByApiId(unit.data.apiIds)
-                    TriggerEvent("SonoranCAD::pushevents:UnitAttach", data, unit)
+                    if not unit then
+                        debugLog(("Failed to attach unit as I couldn't find them. Idents: % - Unit: %s"):format(json.encode(dispatchData.idents, GetUnitById(id))))
+                    else
+                        local officerId = GetSourceByApiId(unit.data.apiIds)
+                        TriggerEvent("SonoranCAD::pushevents:UnitAttach", data, unit)
+                    end
                 end
             end,
             ["CALL_CLOSE"] = function() 
