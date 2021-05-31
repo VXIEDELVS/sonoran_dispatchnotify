@@ -21,7 +21,7 @@ if pluginConfig.enabled then
 
     local function findCall(id)
         for idx, callId in pairs(EmergencyToCallMapping) do
-            print(("check %s = %s"):format(id, callId))
+            debugLog(("check %s = %s"):format(id, callId))
             if id == callId then
                 return idx
             end
@@ -171,7 +171,6 @@ if pluginConfig.enabled then
         elseif call.dispatch ~= nil then
             call = call.dispatch
         end
-        print("found the call: "..json.encode(call))
         local callerPlayerId = CallOriginMapping[call.callId]
         if callerPlayerId == nil and call.metaData ~= nil then
             callerPlayerId = call.metaData.callerPlayerId
@@ -236,7 +235,7 @@ if pluginConfig.enabled then
 
     RegisterServerEvent("SonoranCAD::pushevents:UnitAttach")
     AddEventHandler("SonoranCAD::pushevents:UnitAttach", function(call, unit)
-        print("hello, unit attach! "..json.encode(call))
+        debugLog("hello, unit attach! "..json.encode(call))
         local callerId = nil
         if call.dispatch.metaData ~= nil then
             callerId = call.dispatch.metaData.callerPlayerId
@@ -254,7 +253,7 @@ if pluginConfig.enabled then
         else
             debugLog("failed to find unit "..json.encode(unit))
         end
-        print(json.encode(unit))
+        debugLog(json.encode(unit))
         if pluginConfig.enableCallerNotify and callerId ~= nil then
             if pluginConfig.callerNotifyMethod == "chat" then
                 SendMessage("dispatch", callerId, pluginConfig.notifyMessage:gsub("{officer}", unit.data.name))
@@ -287,7 +286,7 @@ if pluginConfig.enabled then
                 for k, id in pairs(dispatchData.idents) do
                     local unit = GetUnitCache()[GetUnitById(id)]
                     if not unit then
-                        debugLog(("Failed to attach unit as I couldn't find them. Idents: %s - Unit: %s"):format(json.encode(dispatchData.idents, GetUnitById(id))))
+                        debugLog(("Failed to attach unit as I couldn't find them. Idents: %s"):format(json.encode(dispatchData.idents)))
                     else
                         local officerId = GetSourceByApiId(unit.data.apiIds)
                         TriggerEvent("SonoranCAD::pushevents:UnitAttach", data, unit)
@@ -319,7 +318,6 @@ if pluginConfig.enabled then
 
     AddEventHandler("SonoranCAD::pushevents:DispatchEdit", function(before, after)
         if before.dispatch.postal ~= after.dispatch.postal then
-            print("trigger")
             TriggerEvent("SonoranCAD::dispatchnotify:CallEdit:Postal", after.dispatch.callId, after.dispatch.postal)
         end
         if before.address ~= after.address then
