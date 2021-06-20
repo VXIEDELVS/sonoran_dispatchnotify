@@ -228,7 +228,7 @@ if pluginConfig.enabled then
         else
             -- Call already exists
             debugLog("Found Call. Attaching!")
-            local data = {callId = currentCall, units = {identifiers}, serverId = Config.serverId}
+            local data = {callId = currentCall.callId, units = {identifiers}, serverId = Config.serverId}
             performApiRequest({data}, "ATTACH_UNIT", function(res)
                 debugLog("Attach OK: "..tostring(res))
                 SendMessage("debug", source, "You have been attached to the call.")
