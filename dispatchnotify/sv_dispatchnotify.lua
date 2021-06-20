@@ -195,7 +195,7 @@ if pluginConfig.enabled then
                     return
                 end
             end
-            if call.metaData.useCallLocation then
+            if call.metaData.useCallLocation == "true" then
                 postal = call.metaData.callPostal
             end
             local payload = {   serverId = Config.serverId,
