@@ -198,7 +198,7 @@ if pluginConfig.enabled then
             if call.metaData.useCallLocation == "true" then
                 postal = call.metaData.callPostal
             end
-            local title = "OFFICER RESPONSE - "..call.callId, 
+            local title = "OFFICER RESPONSE - "..call.callId
             if pluginConfig.callTitle ~= nil then
                 title = pluginConfig.callTitle.." - "..call.callId
             end
