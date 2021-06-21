@@ -128,7 +128,9 @@ local config = {
     --[[
         callTitle: Customize the title of a call made
     ]]
-    callTitle = "OFFICER RESPONSE"
+    callTitle = "OFFICER RESPONSE",
+    postalSendTimer = 1500,
+    nearestPostalResourceName = "nearest-postal"
 }
 
 if config.enabled then
