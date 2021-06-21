@@ -210,7 +210,7 @@ if pluginConfig.enabled then
                                 code = "",
                                 postal = postal ~= nil ? postal : "",
                                 address = call.location ~= nil ? call.location : "Unknown", 
-                                title = title 
+                                title = title,
                                 description = call.description ~= nil ? call.description : "", 
                                 isEmergency = call.isEmergency,
                                 notes = {"Officer responding"},
