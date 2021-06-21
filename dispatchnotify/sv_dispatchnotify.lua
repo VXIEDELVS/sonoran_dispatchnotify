@@ -198,16 +198,20 @@ if pluginConfig.enabled then
             if call.metaData.useCallLocation == "true" then
                 postal = call.metaData.callPostal
             end
+            local title = "OFFICER RESPONSE - "..call.callId, 
+            if pluginConfig.callTitle ~= nil then
+                title = pluginConfig.callTitle.." - "..call.callId
+            end
             local payload = {   serverId = Config.serverId,
                                 origin = 0, 
                                 status = 1, 
                                 priority = 2,
                                 block = "",
                                 code = "",
-                                postal = postal,
-                                address = call.location, 
-                                title = "OFFICER RESPONSE - "..call.callId, 
-                                description = call.description, 
+                                postal = postal ~= nil ? postal : "",
+                                address = call.location ~= nil ? call.location : "Unknown", 
+                                title = title 
+                                description = call.description ~= nil ? call.description : "", 
                                 isEmergency = call.isEmergency,
                                 notes = {"Officer responding"},
                                 metaData = { callerPlayerId = callerPlayerId, createdFromId = call.callId, silentAlert = call.metaData.silentAlert, useCallLocation = call.metaData.useCallLocation, callLocationx = call.metaData.callLocationx, callLocationy = call.metaData.callLocationy, callLocationz=call.metaData.callLocationz },

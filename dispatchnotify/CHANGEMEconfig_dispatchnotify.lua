@@ -124,7 +124,11 @@ local config = {
     --[[
         waypointFallbackEnabled: Fall back to postal if exact coordinates cannot be found (for self-generated calls)
     ]]
-    waypointFallbackEnabled = true
+    waypointFallbackEnabled = true,
+    --[[
+        callTitle: Customize the title of a call made
+    ]]
+    callTitle = "OFFICER RESPONSE"
 }
 
 if config.enabled then
