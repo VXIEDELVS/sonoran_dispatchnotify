@@ -11,7 +11,7 @@ local config = {
     configVersion = "2.0",
     pluginName = "dispatchnotify", -- name your plugin here
     pluginAuthor = "SonoranCAD", -- author
-    requiresPlugins = {"callcommands", "pushevents"}, -- required plugins for this plugin to work, separated by commas
+    requiresPlugins = {"callcommands"}, -- required plugins for this plugin to work, separated by commas
 
     --[[
         Enable incoming 911 call notifications
