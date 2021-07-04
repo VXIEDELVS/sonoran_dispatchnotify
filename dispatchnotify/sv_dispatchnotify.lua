@@ -30,7 +30,7 @@ if pluginConfig.enabled then
     end
 
     local function getCallFromOriginId(id)
-        for k, call in GetCallCache() do
+        for k, call in pairs(GetCallCache()) do
             if call.dispatch.metaData ~= nil then
                 if tonumber(call.dispatch.metaData.createdFromId) == tonumber(id) then
                     return call
@@ -196,7 +196,7 @@ if pluginConfig.enabled then
                     return
                 end
             end
-            if call.metaData.useCallLocation == "true" then
+            if call.metaData ~= nil and call.metaData.useCallLocation == "true" and call.metaData.callPostal ~= nil then
                 postal = call.metaData.callPostal
             end
             local title = "OFFICER RESPONSE - "..call.callId
