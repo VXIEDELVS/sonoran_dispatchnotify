@@ -203,6 +203,12 @@ if pluginConfig.enabled then
             if pluginConfig.callTitle ~= nil then
                 title = pluginConfig.callTitle.." - "..call.callId
             end
+            metaData = {callerPlayerId = callerPlayerId, createdFromId = call.callId }
+            if call.metaData ~= nil then
+                for k, v in pairs(call.metaData) do
+                    metaData[k] = v
+                end
+            end
             local payload = {   serverId = Config.serverId,
                                 origin = 0, 
                                 status = 1, 
@@ -215,7 +221,7 @@ if pluginConfig.enabled then
                                 description = (call.description ~= nil and call.description or ""), 
                                 isEmergency = call.isEmergency,
                                 notes = {"Officer responding"},
-                                metaData = { callerPlayerId = callerPlayerId, createdFromId = call.callId, silentAlert = call.metaData.silentAlert, useCallLocation = call.metaData.useCallLocation, callLocationx = call.metaData.callLocationx, callLocationy = call.metaData.callLocationy, callLocationz=call.metaData.callLocationz },
+                                metaData = metaData,
                                 units = { identifiers }
             }
             performApiRequest({payload}, "NEW_DISPATCH", function(response)
