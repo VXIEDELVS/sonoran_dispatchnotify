@@ -129,6 +129,8 @@ if pluginConfig.enabled then
                             layout = "bottomcenter",
                             timeout = "10000"
                         })
+                    elseif pluginConfig.unitNotifyMethod == "custom" then
+                        TriggerClientEvent("SonoranCAD::dispatchnotify:IncomingCallNotify", unit, message)
                     end
                 end
             end
