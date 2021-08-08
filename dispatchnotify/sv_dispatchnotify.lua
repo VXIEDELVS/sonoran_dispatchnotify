@@ -320,7 +320,7 @@ if pluginConfig.enabled then
             end,
             ["CALL_CLOSE"] = function() 
                 local cache = GetCallCache()[dispatchData.callId]
-                if cache.units ~= nil then
+                if cache ~= nil and cache.units ~= nil then
                     for k, v in pairs(cache.units) do
                         local officerId = GetUnitById(v.id)
                         if officerId ~= nil then
