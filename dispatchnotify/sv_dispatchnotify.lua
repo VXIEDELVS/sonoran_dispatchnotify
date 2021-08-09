@@ -319,7 +319,8 @@ if pluginConfig.enabled then
                 end
             end,
             ["CALL_CLOSE"] = function() 
-                local cache = GetCallCache()[dispatchData.callId]
+                debugLog("CALL_CLOSE fired "..json.encode(dispatchData))
+                local cache = GetCallCache()[dispatchData.dispatch.callId]
                 if cache.units ~= nil then
                     for k, v in pairs(cache.units) do
                         local officerId = GetUnitById(v.id)
