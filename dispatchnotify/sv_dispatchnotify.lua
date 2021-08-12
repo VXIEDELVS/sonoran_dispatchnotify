@@ -114,24 +114,24 @@ if pluginConfig.enabled then
         if pluginConfig.enableUnitNotify then
             local type = call.emergency and pluginConfig.civilCallType or pluginConfig.emergencyCallType
             local message = pluginConfig.incomingCallMessage:gsub("{caller}", call.caller):gsub("{location}", call.location):gsub("{description}", call.description):gsub("{callId}", call.callId):gsub("{command}", pluginConfig.respondCommandName)
-            for k, v in pairs(GetUnitCache()) do
-                local unit = GetSourceByApiId(v.data.apiIds)
-                if not unit then
-                    debugLog("no unit? "..json.encode(v))
-                end
-                if IsPlayerOnDuty(unit) then
+            for i = 1, GetNumPlayerIndices(), 1 do
+                local player = GetPlayerFromIndex(index)
+                local unit = GetUnitByPlayerId(player)
+                if IsPlayerOnDuty(player) then
                     if pluginConfig.unitNotifyMethod == "chat" then
-                        SendMessage(type, unit, message)
+                        SendMessage(type, player, message)
                     elseif pluginConfig.unitNotifyMethod == "pnotify" then
-                        TriggerClientEvent("pNotify:SendNotification", unit, {
+                        TriggerClientEvent("pNotify:SendNotification", player, {
                             text = message,
                             type = "error",
                             layout = "bottomcenter",
                             timeout = "10000"
                         })
                     elseif pluginConfig.unitNotifyMethod == "custom" then
-                        TriggerClientEvent("SonoranCAD::dispatchnotify:IncomingCallNotify", unit, message)
+                        TriggerClientEvent("SonoranCAD::dispatchnotify:IncomingCallNotify", player, message)
                     end
+                else
+                    debugLog(("Ignore player %s, not on duty"):format(player))
                 end
             end
         end
@@ -155,6 +155,10 @@ if pluginConfig.enabled then
         end
         if not IsPlayerOnDuty(source) then
             SendMessage("error", source, "You must be on duty to use this command.")
+            return
+        end
+        if not GetUnitByPlayerId(source) then
+            SendMessage("error", source, "Due to system limitations, you must be logged into the CAD to self attach.")
             return
         end
         if args[1] == nil then
@@ -278,7 +282,6 @@ if pluginConfig.enabled then
         else
             debugLog("failed to find unit "..json.encode(unit))
         end
-        debugLog(json.encode(unit))
         if pluginConfig.enableCallerNotify and callerId ~= nil and not call.dispatch.metaData.silentAlert then
             if pluginConfig.callerNotifyMethod == "chat" then
                 SendMessage("dispatch", callerId, pluginConfig.notifyMessage:gsub("{officer}", unit.data.name))
