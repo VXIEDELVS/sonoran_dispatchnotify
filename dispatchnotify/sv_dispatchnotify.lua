@@ -117,7 +117,7 @@ if pluginConfig.enabled then
             local type = call.emergency and pluginConfig.civilCallType or pluginConfig.emergencyCallType
             local message = pluginConfig.incomingCallMessage:gsub("{caller}", call.caller):gsub("{location}", call.location):gsub("{description}", call.description):gsub("{callId}", call.callId):gsub("{command}", pluginConfig.respondCommandName)
             for i = 0, GetNumPlayerIndices()-1 do
-                local player = GetPlayerFromIndex(index)
+                local player = GetPlayerFromIndex(i)
                 local unit = GetUnitByPlayerId(player)
                 if IsPlayerOnDuty(player) then
                     if pluginConfig.unitNotifyMethod == "chat" then
