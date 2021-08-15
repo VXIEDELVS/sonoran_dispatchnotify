@@ -31,9 +31,11 @@ if pluginConfig.enabled then
 
     local function getCallFromOriginId(id)
         for k, call in pairs(GetCallCache()) do
-            if call.dispatch.metaData ~= nil then
-                if tonumber(call.dispatch.metaData.createdFromId) == tonumber(id) then
-                    return call
+            if call.dispatch ~= nil then
+                if call.dispatch.metaData ~= nil then
+                    if tonumber(call.dispatch.metaData.createdFromId) == tonumber(id) then
+                        return call
+                    end
                 end
             end
         end
