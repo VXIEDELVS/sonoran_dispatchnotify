@@ -379,6 +379,10 @@ if pluginConfig.enabled then
         end
         for k, id in pairs(call.dispatch.idents) do
             local unit = GetUnitCache()[GetUnitById(id)]
+            if unit == nil then
+                debugLog(("Unit was nil, requested %s, cache is: %s"):format(id, GetUnitCache()))
+                return
+            end
             local officerId = GetSourceByApiId(unit.data.apiIds)
             if officerId ~= nil then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, postal)
