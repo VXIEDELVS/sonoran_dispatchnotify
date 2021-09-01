@@ -1,8 +1,8 @@
 {
-    "version": "2.2.3",
+    "version": "2.3.0",
     "check_url": "https://raw.githubusercontent.com/Sonoran-Software/sonoran_dispatchnotify/master/dispatchnotify/version_dispatchnotify.json",
     "download_url": "https://github.com/Sonoran-Software/sonoran_dispatchnotify/",
-    "configVersion": "2.0",
-    "minCoreVersion": "2.5.7",
+    "configVersion": "3.0",
+    "minCoreVersion": "2.8.0",
     "pluginDepends": [{ "name": "locations", "version": "1.3.1", "critical": true }, { "name": "callcommands", "version": "1.3.2", "critical": true }, { "name": "postals", "version": "1.4.2", "critical": false }]
 }

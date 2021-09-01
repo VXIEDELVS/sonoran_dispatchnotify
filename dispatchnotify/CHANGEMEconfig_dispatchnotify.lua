@@ -7,8 +7,8 @@
 
 ]]
 local config = {
-    enabled = false,
-    configVersion = "2.0",
+    enabled = true,
+    configVersion = "3.0",
     pluginName = "dispatchnotify", -- name your plugin here
     pluginAuthor = "SonoranCAD", -- author
     requiresPlugins = {"callcommands"}, -- required plugins for this plugin to work, separated by commas
@@ -129,8 +129,31 @@ local config = {
         callTitle: Customize the title of a call made
     ]]
     callTitle = "OFFICER RESPONSE",
+    --[[
+        postalSendTimer: delay on updating a call's postal by attached primary unit. Setting too low will cause rate limiting!
+    ]]
     postalSendTimer = 1500,
-    nearestPostalResourceName = "nearest-postal"
+    --[[
+        nearestPostalResourceName: name of your nearest postal script
+    ]]
+    nearestPostalResourceName = "nearest-postal",
+    --[[
+        sendNotesToUnits: Whether the script will fire events related to call notes.
+    ]]
+    sendNotesToUnits = true,
+    --[[
+        noteNotifyMethod:
+            chat: send new notes via chat
+            pnotify: send new notes via a pNotify popup (requires pNotify resource)
+            custom: fire a client-side event that your script will consume (each active unit gets SonoranCAD::dispatchnotify:NewCallNote with an object containing callId and note)
+    ]]
+    noteNotifyMethod = "chat",
+    --[[
+        noteMessage: Message to send to officers when a note is added, using the placeholders:
+            {callid} - the call ID
+            {note} - the note added
+    ]]
+    noteMessage = "New note added for call ^*{callid}^r: {note}"
 }
 
 if config.enabled then

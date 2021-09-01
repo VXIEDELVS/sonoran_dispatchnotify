@@ -18,6 +18,7 @@ if pluginConfig.enabled then
 
     local CallOriginMapping = {} -- callId => playerId
     local EmergencyToCallMapping = {} -- eCallId => CallId
+    local CallNotes = {} -- callid -> notes table
 
     local function findCall(id)
         for idx, callId in pairs(EmergencyToCallMapping) do
@@ -79,6 +80,20 @@ if pluginConfig.enabled then
         elseif pluginConfig.unitDutyMethod == "custom" then
             return unitDutyCustom(player)
         end
+    end
+
+    local function addCallNote(callId, note)
+        if not CallNotes[callId] then
+            local tbl = {}
+            table.insert(tbl, note)
+            CallNotes[callId] = tbl
+        else
+            table.insert(CallNotes[callId], note)
+        end
+    end
+
+    local function clearNotes(callId)
+        CallNotes[callId] = nil
     end
 
     local ActiveDispatchers = {}
@@ -334,6 +349,7 @@ if pluginConfig.enabled then
                         end
                     end
                 end
+                clearNotes(dispatchData.dispatch.callId)
             end,
             ["CALL_NOTE"] = function() 
                 TriggerEvent("SonoranCAD::dispatchnotify:CallNote", dispatchData.callId, dispatchData.notes)
@@ -400,6 +416,47 @@ if pluginConfig.enabled then
             serverId = Config.serverId
         }
         performApiRequest(data, 'SET_CALL_POSTAL', function() end)
+    end)
+
+    AddEventHandler("SonoranCAD::pushevents:DispatchNote", function(data)
+        if not pluginConfig.sendNotesToUnits then
+            return
+        end
+        local call = GetCallCache()[data.callId]
+        if not call then
+            debugLog(("Failed to find call: %s"):format(json.encode(data)))
+            return
+        end
+        call = call.dispatch
+        -- add note to cache
+        addCallNote(data.callId, data.note)
+        debugLog(("Incoming note for ID %s, call: %s"):format(data.callId, json.encode(call)))
+        if call.idents ~= nil then
+            for k, v in pairs(call.idents) do
+                local officerId = GetUnitById(v)
+                if officerId ~= nil then
+                    local patterns = { ["{callid}"] = data.callId, ["{note}"] = data.note}
+                    local message = pluginConfig.noteMessage
+                    for k, v in pairs(patterns) do
+                        message = message:gsub(k, v)
+                    end
+                    if pluginConfig.noteNotifyMethod == "chat" then
+                        SendMessage("dispatch", officerId, message)
+                    elseif pluginConfig.noteNotifyMethod == "pnotify" then
+                        TriggerClientEvent("pNotify:SendNotification", officerId, {
+                            text = message,
+                            type = "info",
+                            layout = "topright",
+                            timeout = "10000"
+                        })
+                    else
+                        TriggerClientEvent("SonoranCAD::dispatchnotify:NewCallNote", officerId, data)
+                    end
+                else
+                    debugLog(("Skipping officer %s, not available"):format(v.id))
+                end
+            end
+        end
     end)
 end
 
