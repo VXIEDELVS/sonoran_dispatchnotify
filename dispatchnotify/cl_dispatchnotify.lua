@@ -19,6 +19,7 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
         local lastPostal = nil
         local lastCoords = nil
         local currentCallId = nil
+        local lockedPlate = nil
 
         RegisterNetEvent("SonoranCAD::dispatchnotify:SetGps")
         AddEventHandler("SonoranCAD::dispatchnotify:SetGps", function(postal)
@@ -107,6 +108,26 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
                     TriggerEvent("chat:addMessage", {args = {"^0[ ^2Note ^0] ", "Note sent to CAD."}})
                 else
                     TriggerEvent("chat:addMessage", {args = {"^0[ ^4Error ^0] ", "Not attached to any call."}})
+                end
+            end)
+        end
+
+        if pluginConfig.enableAddPlate then
+            if not isPluginLoaded("wraithv2") then
+                errorLog("[dispatchnotify] Plate add command is enabled, but wraithv2 plugin is missing and is required. Refusing to add command.")
+                return
+            end
+            RegisterNetEvent("SonoranCAD::dispatchnotify:PlateLock")
+            AddEventHandler("SonoranCAD::dispatchnotify:PlateLock", function(plate)
+                debugLog("Got locked plate event "..tostring(plate))
+                lockedPlate = plate
+            end)
+            RegisterCommand(pluginConfig.addPlateCommand, function(source, args, rawCommand)
+                if currentCallId ~= nil and lockedPlate ~= nil then
+                    TriggerServerEvent("SonoranCAD::dispatchnotify:AddNoteToCall", currentCallId, ("PLATE NUMBER: %s"):format(lockedPlate))
+                    TriggerEvent("chat:addMessage", {args = {"^0[ ^2Note ^0] ", ("Locked plate %s sent to CAD."):format(lockedPlate)}})
+                else
+                    TriggerEvent("chat:addMessage", {args = {"^0[ ^4Error ^0] ", "Not attached to any call or no plate locked."}})
                 end
             end)
         end

@@ -472,7 +472,11 @@ if pluginConfig.enabled then
             -- TODO: api request
         end
     end)
-
+    AddEventHandler("SonoranCAD::wraithv2:PlateLocked", function(source, reg, cam, plate, index)
+        if IsPlayerOnDuty(source) then
+            TriggerClientEvent("SonoranCAD::dispatchnotify:PlateLock", source, plate)
+        end
+    end)
     
 end
 
