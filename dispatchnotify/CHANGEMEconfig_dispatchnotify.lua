@@ -153,7 +153,15 @@ local config = {
             {callid} - the call ID
             {note} - the note added
     ]]
-    noteMessage = "New note added for call ^*{callid}^r: {note}"
+    noteMessage = "New note added for call ^*{callid}^r: {note}",
+    --[[
+        enableAddNote: Whether or not to enable the addnote command, allowing units attached to calls to add notes to their call.
+    ]]
+    enableAddNote = true,
+    --[[
+        addNoteCommand: The command to create for adding notes.
+    ]]
+    addNoteCommand = "addnote"
 }
 
 if config.enabled then

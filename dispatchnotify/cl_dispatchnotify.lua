@@ -18,6 +18,7 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
         local gpsLock = true
         local lastPostal = nil
         local lastCoords = nil
+        local currentCallId = nil
 
         RegisterNetEvent("SonoranCAD::dispatchnotify:SetGps")
         AddEventHandler("SonoranCAD::dispatchnotify:SetGps", function(postal)
@@ -67,6 +68,18 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
             TriggerEvent("chat:addMessage", {args = {"^0[ ^2GPS ^0] ", ("GPS lock has been %s"):format(gpsLock and "enabled" or "disabled")}})
         end)
 
+        RegisterNetEvent("SonoranCAD::dispatchnotify:UnitAttach")
+        RegisterNetEvent("SonoranCAD::dispatchnotify:CallDetach")
+
+        AddEventHandler("SonoranCAD::dispatchnotify:CallAttach", function(callId)
+            debugLog("Got attach for call "..tostring(callId))
+            currentCallId = callId
+        end)
+        AddEventHandler("SonoranCAD::dispatchnotify:CallDetach", function(callId)
+            debugLog("Got detach for call "..tostring(callId))
+            currentCallId = nil
+        end)
+
         function track()
             local lastpostal = nil
             if trackingCall then
@@ -84,6 +97,18 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
                     Citizen.Wait(pluginConfig.postalSendTimer)
                 end
             end
+        end
+
+        if pluginConfig.enableAddNote then
+            RegisterCommand(pluginConfig.addNoteCommand, function(source, args, rawCommand)
+                local note = table.concat(args, " ")
+                if currentCallId ~= nil then
+                    TriggerServerEvent("SonoranCAD::dispatchnotify:AddNoteToCall", currentCallId, note)
+                    TriggerEvent("chat:addMessage", {args = {"^0[ ^2Note ^0] ", "Note sent to CAD."}})
+                else
+                    TriggerEvent("chat:addMessage", {args = {"^0[ ^4Error ^0] ", "Not attached to any call."}})
+                end
+            end)
         end
 
     end

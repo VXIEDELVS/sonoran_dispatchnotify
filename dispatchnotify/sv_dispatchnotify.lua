@@ -280,6 +280,7 @@ if pluginConfig.enabled then
         local officerId = GetSourceByApiId(unit.data.apiIds)
         if officerId ~= nil then
             SendMessage("dispatch", officerId, ("You are now attached to call ^4%s^0. Description: ^4%s^0"):format(call.dispatch.callId, call.dispatch.description))
+            TriggerClientEvent("SonoranCAD::dispatchnotify:CallAttach", officerId, call.dispatch.callId)
             if pluginConfig.waypointType == "exact" and callerId ~= nil and LocationCache[callerId] ~= nil then
                 if call.dispatch.metaData.useCallLocation then
                     TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, {x=call.dispatch.metaData.callLocationx, y=call.dispatch.metaData.callLocationy, z=call.dispatch.metaData.callLocationz})
@@ -382,6 +383,7 @@ if pluginConfig.enabled then
             if call.dispatch.metaData.trackPrimary then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:StopTracking", officerId)
             end
+            TriggerClientEvent("SonoranCAD::dispatchnotify:CallDetach", officerId, call.dispatch.callId)
             SendMessage("dispatch", officerId, ("You were detached from call %s."):format(call.dispatch.callId))
         end
     end)
@@ -458,6 +460,20 @@ if pluginConfig.enabled then
             end
         end
     end)
+
+    RegisterNetEvent("SonoranCAD::dispatchnotify:AddNoteToCall")
+    AddEventHandler("SonoranCAD::dispatchnotify:AddNoteToCall", function(callId, note)
+        local source = source
+        debugLog(("Got note add request from %s, call id %s: %s"):format(source, callId, note))
+        local call = GetCallCache()[callId]
+        if call == nil then
+            TriggerClientEvent("chat:addMessage", source, {args = {"^0[ ^2Dispatch ^0] ", "Unable to find call."}})
+        else
+            -- TODO: api request
+        end
+    end)
+
+    
 end
 
 end) end)
