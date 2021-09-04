@@ -69,8 +69,9 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
             TriggerEvent("chat:addMessage", {args = {"^0[ ^2GPS ^0] ", ("GPS lock has been %s"):format(gpsLock and "enabled" or "disabled")}})
         end)
 
-        RegisterNetEvent("SonoranCAD::dispatchnotify:UnitAttach")
+        RegisterNetEvent("SonoranCAD::dispatchnotify:CallAttach")
         RegisterNetEvent("SonoranCAD::dispatchnotify:CallDetach")
+        RegisterNetEvent("SonoranCAD::dispatchnotify:AddNoteToCall")
 
         AddEventHandler("SonoranCAD::dispatchnotify:CallAttach", function(callId)
             debugLog("Got attach for call "..tostring(callId))
@@ -113,10 +114,6 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
         end
 
         if pluginConfig.enableAddPlate then
-            if not isPluginLoaded("wraithv2") then
-                errorLog("[dispatchnotify] Plate add command is enabled, but wraithv2 plugin is missing and is required. Refusing to add command.")
-                return
-            end
             RegisterNetEvent("SonoranCAD::dispatchnotify:PlateLock")
             AddEventHandler("SonoranCAD::dispatchnotify:PlateLock", function(plate)
                 debugLog("Got locked plate event "..tostring(plate))

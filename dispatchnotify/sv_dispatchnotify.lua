@@ -270,6 +270,8 @@ if pluginConfig.enabled then
         end
     end)
 
+    RegisterNetEvent("SonoranCAD::dispatchnotify:CallAttach")
+    RegisterNetEvent("SonoranCAD::dispatchnotify:CallDetach")
     RegisterServerEvent("SonoranCAD::pushevents:UnitAttach")
     AddEventHandler("SonoranCAD::pushevents:UnitAttach", function(call, unit)
         debugLog("hello, unit attach! "..json.encode(call))
@@ -461,6 +463,7 @@ if pluginConfig.enabled then
         end
     end)
 
+    registerApiType("ADD_CALL_NOTE", "emergency")
     RegisterNetEvent("SonoranCAD::dispatchnotify:AddNoteToCall")
     AddEventHandler("SonoranCAD::dispatchnotify:AddNoteToCall", function(callId, note)
         local source = source
@@ -469,10 +472,12 @@ if pluginConfig.enabled then
         if call == nil then
             TriggerClientEvent("chat:addMessage", source, {args = {"^0[ ^2Dispatch ^0] ", "Unable to find call."}})
         else
-            -- TODO: api request
+            local payload = { serverId = Config.serverId, note = note, callId = callId }
+            performApiRequest({payload}, "ADD_CALL_NOTE", function(res) end)
         end
     end)
-    AddEventHandler("SonoranCAD::wraithv2:PlateLocked", function(source, reg, cam, plate, index)
+    AddEventHandler("wk:onPlateLocked", function(cam, plate, index)
+        plate = plate:match("^%s*(.-)%s*$")
         if IsPlayerOnDuty(source) then
             TriggerClientEvent("SonoranCAD::dispatchnotify:PlateLock", source, plate)
         end
