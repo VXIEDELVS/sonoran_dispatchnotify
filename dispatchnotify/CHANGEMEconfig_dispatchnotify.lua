@@ -161,7 +161,15 @@ local config = {
     --[[
         addNoteCommand: The command to create for adding notes.
     ]]
-    addNoteCommand = "addnote"
+    addNoteCommand = "addnote",
+    --[[
+        enableAddPlate: Enable the addplate command, allowing units to send locked plate data as a note to their current call. Will require the wraithv2 plugin to work.
+    ]]
+    enableAddPlate = true,
+    --[[
+        addPlateCommand: The command to create for sending plate data
+    ]]
+    addPlateCommand = "addplate"
 }
 
 if config.enabled then

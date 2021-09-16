@@ -450,7 +450,7 @@ if pluginConfig.enabled then
                         TriggerClientEvent("pNotify:SendNotification", officerId, {
                             text = message,
                             type = "info",
-                            layout = "topright",
+                            layout = "bottomcenter",
                             timeout = "10000"
                         })
                     else
@@ -477,7 +477,7 @@ if pluginConfig.enabled then
         end
     end)
     AddEventHandler("wk:onPlateLocked", function(cam, plate, index)
-        plate = plate:match("^%s*(.-)%s*$")
+        local plate = plate:match("^%s*(.-)%s*$")
         if IsPlayerOnDuty(source) then
             TriggerClientEvent("SonoranCAD::dispatchnotify:PlateLock", source, plate)
         end
