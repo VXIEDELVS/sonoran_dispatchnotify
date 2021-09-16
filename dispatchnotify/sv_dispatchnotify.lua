@@ -457,7 +457,7 @@ if pluginConfig.enabled then
                         TriggerClientEvent("SonoranCAD::dispatchnotify:NewCallNote", officerId, data)
                     end
                 else
-                    debugLog(("Skipping officer %s, not available"):format(v.id))
+                    debugLog(("Skipping officer %s, not available"):format(v))
                 end
             end
         end
