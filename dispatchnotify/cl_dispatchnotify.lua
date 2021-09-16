@@ -87,8 +87,8 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
             if trackingCall then
                 while trackingCall and trackingID ~= nil do
                     local postal = nil
-                    if exports[pluginConfig.nearestPostalResourceName] ~= nil then
-                        postal = exports[pluginConfig.nearestPostalResourceName]:getPostal()
+                    if isPluginLoaded("postals") and getNearestPostal() ~= nil then
+                        postal = getNearestPostal()
                     else
                         assert(false, "Required postal resource is not loaded. Cannot use postals plugin.")
                     end

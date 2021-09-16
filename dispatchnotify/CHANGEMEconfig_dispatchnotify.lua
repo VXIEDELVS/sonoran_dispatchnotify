@@ -130,14 +130,6 @@ local config = {
     ]]
     callTitle = "OFFICER RESPONSE",
     --[[
-        postalSendTimer: delay on updating a call's postal by attached primary unit. Setting too low will cause rate limiting!
-    ]]
-    postalSendTimer = 1500,
-    --[[
-        nearestPostalResourceName: name of your nearest postal script
-    ]]
-    nearestPostalResourceName = "nearest-postal",
-    --[[
         sendNotesToUnits: Whether the script will fire events related to call notes.
     ]]
     sendNotesToUnits = true,
