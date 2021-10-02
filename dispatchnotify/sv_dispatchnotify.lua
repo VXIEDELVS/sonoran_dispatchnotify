@@ -343,6 +343,10 @@ if pluginConfig.enabled then
             end,
             ["CALL_CLOSE"] = function() 
                 debugLog("CALL_CLOSE fired "..json.encode(dispatchData))
+                if dispatchData == nil or dispatchData.dispatch == nil then
+                    debugLog("nil value detected, ignore it")
+                    return
+                end
                 local cache = GetCallCache()[dispatchData.dispatch.callId]
                 if cache.units ~= nil then
                     for k, v in pairs(cache.units) do
