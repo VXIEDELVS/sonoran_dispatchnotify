@@ -480,12 +480,16 @@ if pluginConfig.enabled then
             performApiRequest({payload}, "ADD_CALL_NOTE", function(res) end)
         end
     end)
-    AddEventHandler("wk:onPlateLocked", function(cam, plate, index)
-        local plate = plate:match("^%s*(.-)%s*$")
-        if IsPlayerOnDuty(source) then
-            TriggerClientEvent("SonoranCAD::dispatchnotify:PlateLock", source, plate)
-        end
-    end)
+    if isPluginLoaded("wraithv2") then
+        AddEventHandler("wk:onPlateLocked", function(cam, plate, index)
+            local plate = plate:match("^%s*(.-)%s*$")
+            if IsPlayerOnDuty(source) then
+                TriggerClientEvent("SonoranCAD::dispatchnotify:PlateLock", source, plate)
+            end
+        end)
+    else
+        debugLog("Not loading radar lock as wraith plugin is not loaded")
+    end
     
 end
 

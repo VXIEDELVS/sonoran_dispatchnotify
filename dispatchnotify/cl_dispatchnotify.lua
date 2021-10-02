@@ -113,7 +113,7 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
             end)
         end
 
-        if pluginConfig.enableAddPlate then
+        if pluginConfig.enableAddPlate and isPluginLoaded("wraithv2") then
             RegisterNetEvent("SonoranCAD::dispatchnotify:PlateLock")
             AddEventHandler("SonoranCAD::dispatchnotify:PlateLock", function(plate)
                 debugLog("Got locked plate event "..tostring(plate))
