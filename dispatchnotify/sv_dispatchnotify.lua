@@ -385,7 +385,7 @@ if pluginConfig.enabled then
             debugLog("Ignore unit detach, call doesn't exist")
             return
         end
-        if officerId ~= nil and call ~= nil then
+        if officerId ~= nil and call ~= nil and call.dispatch.metaData ~= nil then
             if call.dispatch.metaData.trackPrimary then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:StopTracking", officerId)
             end
@@ -490,6 +490,16 @@ if pluginConfig.enabled then
     else
         debugLog("Not loading radar lock as wraith plugin is not loaded")
     end
+
+    AddEventHandler("SonoranCAD::pushevents:UnitUpdate", function(unit, status)
+        local u = GetUnitCache()[unit]
+        if u then
+            local player = GetSourceByApiId(u.data.apiIds)
+            if player then
+                TriggerClientEvent("SonoranCAD::dispatchnotify:UnsetGps", player)
+            end
+        end
+    end)
     
 end
 

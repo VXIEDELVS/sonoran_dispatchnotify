@@ -36,6 +36,14 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
             end
         end)
 
+        RegisterNetEvent("SonoranCAD::dispatchnotify:UnsetGps")
+        AddEventHandler("SonoranCAD::dispatchnotify:UnsetGps", function()
+            if lastPostal ~= nil then
+                ExecuteCommand("postal")
+                TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "You are now on scene. Disabling GPS."}})
+            end
+        end)
+
         RegisterNetEvent("SonoranCAD::dispatchnotify:SetLocation")
         AddEventHandler("SonoranCAD::dispatchnotify:SetLocation", function(coords)
             if gpsLock then

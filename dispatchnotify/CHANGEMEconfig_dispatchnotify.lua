@@ -161,7 +161,17 @@ local config = {
     --[[
         addPlateCommand: The command to create for sending plate data
     ]]
-    addPlateCommand = "addplate"
+    addPlateCommand = "addplate",
+
+    --[[
+        onSceneHandler: Enables automatically disabling waypointing when marked on scene
+    ]]
+    onSceneHandler = true,
+
+    --[[
+        onSceneIndex: Usually don't have to touch this. Controls which button is "on scene"
+    ]]
+    onSceneIndex = 4
 }
 
 if config.enabled then
