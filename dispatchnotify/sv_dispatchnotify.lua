@@ -283,12 +283,17 @@ if pluginConfig.enabled then
         if officerId ~= nil then
             SendMessage("dispatch", officerId, ("You are now attached to call ^4%s^0. Description: ^4%s^0"):format(call.dispatch.callId, call.dispatch.description))
             TriggerClientEvent("SonoranCAD::dispatchnotify:CallAttach", officerId, call.dispatch.callId)
-            if pluginConfig.waypointType == "exact" and callerId ~= nil and LocationCache[callerId] ~= nil then
-                if call.dispatch.metaData.useCallLocation then
-                    TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, {x=call.dispatch.metaData.callLocationx, y=call.dispatch.metaData.callLocationy, z=call.dispatch.metaData.callLocationz})
-                else
-                    TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, LocationCache[callerId].position)
-                end
+            local callerLocation = nil
+            if callerId ~= nil then
+                callerLocation = LocationCache[callerId]
+            end
+            if callerLocation == nil or call.dispatch.metaData.useCallLocation then
+                callerLocation = {x=call.dispatch.metaData.callLocationx, y=call.dispatch.metaData.callLocationy, z=call.dispatch.metaData.callLocationz}
+            else
+                callerLocation = callerLocation.position
+            end
+            if pluginConfig.waypointType == "exact" and callerLocation ~= nil then
+                TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, callerLocation)
             elseif pluginConfig.waypointType == "postal" or pluginConfig.waypointFallbackEnabled then
                 if call.dispatch.postal ~= nil and call.dispatch.postal ~= "" then
                     TriggerClientEvent("SonoranCAD::dispatchnotify:SetGps", officerId, call.dispatch.postal)
@@ -298,6 +303,12 @@ if pluginConfig.enabled then
                         end
                     end
                 end
+            else
+                local lc = LocationCache[callerId]
+                if lc == nil then
+                    lc = { ['error'] = "locationcache is nil"}
+                end
+                debugLog(("LOCATION SETTING: Failed to send client location. - waypointType: %s - callerId: %s - LocationCache: %s"):format(pluginConfig.waypointType, callerId, json.encode(lc)))
             end
         else
             debugLog("failed to find unit "..json.encode(unit))
