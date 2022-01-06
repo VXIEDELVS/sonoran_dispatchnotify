@@ -46,6 +46,11 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
 
         RegisterNetEvent("SonoranCAD::dispatchnotify:SetLocation")
         AddEventHandler("SonoranCAD::dispatchnotify:SetLocation", function(coords)
+            if coords == nil then
+                return warnLog("SetLocation was called, but no coordinates were found")
+            else
+                debugLog(("In SetLocation: %s"):format(json.encode(coords)))
+            end
             if gpsLock then
                 SetNewWaypoint(coords.x, coords.y)
                 if lastCoords ~= nil then
