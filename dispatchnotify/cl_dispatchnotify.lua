@@ -20,6 +20,7 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
         local lastCoords = nil
         local currentCallId = nil
         local lockedPlate = nil
+        local gpsBlip = false
 
         RegisterNetEvent("SonoranCAD::dispatchnotify:SetGps")
         AddEventHandler("SonoranCAD::dispatchnotify:SetGps", function(postal)
@@ -38,8 +39,13 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
 
         RegisterNetEvent("SonoranCAD::dispatchnotify:UnsetGps")
         AddEventHandler("SonoranCAD::dispatchnotify:UnsetGps", function()
-            if lastPostal ~= nil then
+            if gpsBlip then
+                TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "You are now on scene. Disabling GPS."}})
+                RemoveBlip(gpsBlip)
+                gpsBlip = nil
+            elseif lastPostal ~= nil then
                 ExecuteCommand("postal")
+                lastPostal = nil
                 TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "You are now on scene. Disabling GPS."}})
             end
         end)
@@ -49,10 +55,13 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
             if coords == nil then
                 return warnLog("SetLocation was called, but no coordinates were found")
             else
-                debugLog(("In SetLocation: %s"):format(json.encode(coords)))
+                debugLog(("In SetLocation: x: %s y: %s z: %s"):format(coords.x, coords.y, coords.z))
             end
             if gpsLock then
-                SetNewWaypoint(coords.x, coords.y)
+                if gpsBlip then RemoveBlip(gpsBlip) end
+                gpsBlip = AddBlipForCoord(tonumber(coords.x), tonumber(coords.y), 0.0)
+                SetBlipRouteColour(gpsBlip, 3)
+                SetBlipRoute(gpsBlip, true)
                 if lastCoords ~= nil then
                     if lastCoords.x == coords.x and lastCoords.y == coords.y then
                         TriggerEvent("chat:addMessage", {args = {"^0[ ^2Dispatch ^0] ", "GPS coordinates have been updated."}})
@@ -93,6 +102,8 @@ CreateThread(function() Config.LoadPlugin("dispatchnotify", function(pluginConfi
         AddEventHandler("SonoranCAD::dispatchnotify:CallDetach", function(callId)
             debugLog("Got detach for call "..tostring(callId))
             currentCallId = nil
+            if gpsBlip then RemoveBlip(gpsBlip) end
+            gpsBlip = nil
         end)
 
         function track()

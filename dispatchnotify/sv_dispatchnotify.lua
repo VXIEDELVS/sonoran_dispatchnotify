@@ -285,13 +285,12 @@ if pluginConfig.enabled then
             TriggerClientEvent("SonoranCAD::dispatchnotify:CallAttach", officerId, call.dispatch.callId)
             local callerLocation = nil
             if callerId ~= nil then
-                callerLocation = LocationCache[callerId]
+                callerLocation = findPlayerLocation(callerId)
             end
             if callerLocation == nil or call.dispatch.metaData.useCallLocation then
                 callerLocation = {x=call.dispatch.metaData.callLocationx, y=call.dispatch.metaData.callLocationy, z=call.dispatch.metaData.callLocationz}
-            else
-                callerLocation = callerLocation.position
             end
+            debugLog(("Sending location data %s to %s (call data: %s)"):format(json.encode(callerLocation), officerId, json.encode(call)))
             if pluginConfig.waypointType == "exact" and callerLocation ~= nil then
                 TriggerClientEvent("SonoranCAD::dispatchnotify:SetLocation", officerId, callerLocation)
             elseif pluginConfig.waypointType == "postal" or pluginConfig.waypointFallbackEnabled then
