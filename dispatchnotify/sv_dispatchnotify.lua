@@ -232,6 +232,11 @@ if pluginConfig.enabled then
                     metaData[k] = v
                 end
             end
+            if LocationCache[source] ~= nil and metaData['x'] == nil then
+                metaData['x'] = LocationCache[source].coordinates.x
+                metaData['y'] = LocationCache[source].coordinates.y
+                metaData['z'] = LocationCache[source].coordinates.z
+            end
             local payload = {   serverId = Config.serverId,
                                 origin = 0, 
                                 status = 1, 
