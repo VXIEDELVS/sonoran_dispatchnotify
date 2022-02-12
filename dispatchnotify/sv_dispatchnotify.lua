@@ -293,7 +293,7 @@ if pluginConfig.enabled then
                 callerLocation = findPlayerLocation(callerId)
             end
             if callerLocation == nil or call.dispatch.metaData.useCallLocation then
-                callerLocation = {x=call.dispatch.metaData.callLocationx, y=call.dispatch.metaData.callLocationy, z=call.dispatch.metaData.callLocationz}
+                callerLocation = {x=call.dispatch.metaData.x, y=call.dispatch.metaData.y, z=call.dispatch.metaData.z}
             end
             debugLog(("Sending location data %s to %s (call data: %s)"):format(json.encode(callerLocation), officerId, json.encode(call)))
             if pluginConfig.waypointType == "exact" and callerLocation ~= nil then
