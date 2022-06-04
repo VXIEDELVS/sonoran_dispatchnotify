@@ -69,7 +69,7 @@ if pluginConfig.enabled then
         elseif pluginConfig.unitDutyMethod == "permissions" then
             return IsPlayerAceAllowed(player, "sonorancad.dispatchnotify")
         elseif pluginConfig.unitDutyMethod == "esxjob" then
-            assert(isPluginLoaded("esxsupport"), "esxsupport plugin is required to use the esx on duty method.")
+            assert(isPluginLoaded("esxsupport") or isPluginLoaded("frameworksupport"), "frameworksupport plugin is required to use the esx/qb-core on duty method.")
             local job = GetCurrentJob(player)
             debugLog(("Player %s has job %s, return %s"):format(player, job, pluginConfig.esxJobsAllowed[GetCurrentJob(player)] ))
             if pluginConfig.esxJobsAllowed[GetCurrentJob(player)] then
