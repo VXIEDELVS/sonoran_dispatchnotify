@@ -20,6 +20,8 @@ if pluginConfig.enabled then
     local EmergencyToCallMapping = {} -- eCallId => CallId
     local CallNotes = {} -- callid -> notes table
 
+    local MappedCalls = {} -- eCallId -> call object
+
     local function findCall(id)
         for idx, callId in pairs(EmergencyToCallMapping) do
             debugLog(("check %s = %s"):format(id, callId))
@@ -34,6 +36,7 @@ if pluginConfig.enabled then
         for k, call in pairs(GetCallCache()) do
             if call.dispatch ~= nil then
                 if call.dispatch.metaData ~= nil then
+                    debugLog(("check %s = %s"):format(id, call.dispatch.metaData.createdFromId))
                     if tonumber(call.dispatch.metaData.createdFromId) == tonumber(id) then
                         return call
                     end
@@ -156,7 +159,7 @@ if pluginConfig.enabled then
 
     RegisterServerEvent("SonoranCAD::callcommands:EmergencyCallAdd")
     AddEventHandler("SonoranCAD::callcommands:EmergencyCallAdd", function(playerId, callId)
-        CallOriginMapping[callId] = playerId
+        CallOriginMapping[tonumber(callId)] = playerId
     end)
 
     --Officer response
@@ -166,6 +169,12 @@ if pluginConfig.enabled then
     registerApiType("SET_CALL_POSTAL", "emergency")
     RegisterCommand(pluginConfig.respondCommandName, function(source, args, rawCommand)
         local source = tonumber(source)
+        local callId = args[1]
+        if callId == nil then
+            SendMessage("error", source, "Call ID must be specified.")
+            return
+        end
+        callId = tonumber(callId)
         if not pluginConfig.enableUnitResponse then
             SendMessage("error", source, "Self dispatching is disabled.")
             return
@@ -178,16 +187,16 @@ if pluginConfig.enabled then
             SendMessage("error", source, "Due to system limitations, you must be logged into the CAD to self attach.")
             return
         end
-        if args[1] == nil then
-            SendMessage("error", source, "Call ID must be specified.")
-            return
-        end
-        local call = GetEmergencyCache()[tonumber(args[1])]
+        
+        -- Fetch if call hasn't been responded to yet
+        local call = GetEmergencyCache()[callId]
         if call == nil then
-            call = GetCallCache()[EmergencyToCallMapping[findCall(args[1])]]
+            -- Call responded, grab from mapping
+            call = MappedCalls[callId]
         end
         if call == nil then
-            call = getCallFromOriginId(args[1])
+            -- not in mapping, check call cache
+            call = getCallFromOriginId(callId)
         end
         if call == nil then
             SendMessage("error", source, "Could not find that call ID")
@@ -195,21 +204,16 @@ if pluginConfig.enabled then
         elseif call.dispatch ~= nil then
             call = call.dispatch
         end
-        local callerPlayerId = CallOriginMapping[call.callId]
-        if callerPlayerId == nil and call.metaData ~= nil then
-            callerPlayerId = call.metaData.callerPlayerId
-        end
+        infoLog(("Call information: %s"):format(json.encode(call)))
+        local callerPlayerId = call.metaData.callerPlayerId
         if callerPlayerId == nil then
             debugLog("failed to find caller info")
         end
         local identifiers = GetIdentifiers(source)[Config.primaryIdentifier]
-        local currentCall = EmergencyToCallMapping[call.callId] 
-        if currentCall == nil then
-            currentCall = getCallFromOriginId(call.callId)
-        end
-        if currentCall == nil then
+        local originCall = call.metaData.createdFromId
+        if originCall == nil then
             -- no mapped call, create a new one
-            debugLog(("Creating new call request...(no mapped call for %s)"):format(call.callId))
+            debugLog(("Creating new call request...(no mapped call for %s)"):format(callId))
             local postal = ""
             if isPluginLoaded("postals") and callerPlayerId ~= nil then
                 if PostalsCache[tonumber(callerPlayerId)] ~= nil then
@@ -269,7 +273,7 @@ if pluginConfig.enabled then
         else
             -- Call already exists
             debugLog("Found Call. Attaching!")
-            local data = {callId = currentCall.callId, units = {identifiers}, serverId = Config.serverId}
+            local data = {callId = call.callId, units = {identifiers}, serverId = Config.serverId}
             performApiRequest({data}, "ATTACH_UNIT", function(res)
                 debugLog("Attach OK: "..tostring(res))
                 SendMessage("debug", source, "You have been attached to the call.")
