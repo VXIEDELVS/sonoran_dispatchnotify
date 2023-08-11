@@ -204,7 +204,6 @@ if pluginConfig.enabled then
         elseif call.dispatch ~= nil then
             call = call.dispatch
         end
-        infoLog(("Call information: %s"):format(json.encode(call)))
         local callerPlayerId = call.metaData.callerPlayerId
         if callerPlayerId == nil then
             debugLog("failed to find caller info")
