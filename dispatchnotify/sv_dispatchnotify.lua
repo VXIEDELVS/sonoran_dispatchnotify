@@ -204,8 +204,11 @@ if pluginConfig.enabled then
         elseif call.dispatch ~= nil then
             call = call.dispatch
         end
-        local callerPlayerId = call.metaData.callerPlayerId
-        if callerPlayerId == nil then
+        local callerPlayerId = nil
+        if call.metaData ~= nil then
+            callerPlayerId = call.metaData.callerPlayerId
+        end
+        if call.metaData ~= nil callerPlayerId == nil then
             debugLog("failed to find caller info")
         end
         local identifiers = GetIdentifiers(source)[Config.primaryIdentifier]
