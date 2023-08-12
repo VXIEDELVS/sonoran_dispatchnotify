@@ -205,14 +205,15 @@ if pluginConfig.enabled then
             call = call.dispatch
         end
         local callerPlayerId = nil
+        local originCall = nil
         if call.metaData ~= nil then
             callerPlayerId = call.metaData.callerPlayerId
+            originCall = call.metaData.createdFromId
         end
         if call.metaData ~= nil and callerPlayerId == nil then
             debugLog("failed to find caller info")
         end
         local identifiers = GetIdentifiers(source)[Config.primaryIdentifier]
-        local originCall = call.metaData.createdFromId
         if originCall == nil then
             -- no mapped call, create a new one
             debugLog(("Creating new call request...(no mapped call for %s)"):format(callId))
