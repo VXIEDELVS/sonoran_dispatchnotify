@@ -370,7 +370,7 @@ if pluginConfig.enabled then
                 local cache = GetCallCache()[dispatchData.dispatch.callId]
                 if cache.units ~= nil then
                     for k, v in pairs(cache.units) do
-                        local officerId = GetUnitById(v.id)
+                        local officerId = GetUnitCache()[GetUnitById(v.id)]
                         if officerId ~= nil then
                             TriggerClientEvent("SonoranCAD::dispatchnotify:CallClosed", officerId, cache.callId)
                         end
@@ -485,7 +485,7 @@ if pluginConfig.enabled then
         local noteContent = type(data.note) == 'table' and data.note.content or data.note
         if call.idents ~= nil and type(noteContent) == 'string' then
             for _, ident in pairs(call.idents) do
-                local officerId = GetUnitById(ident)
+                local officerId = GetUnitCache()[GetUnitById(ident)]
                 if officerId ~= nil then
                     local patterns = { ["{callid}"] = data.callId, ["{note}"] = noteContent}
                     local message = pluginConfig.noteMessage
