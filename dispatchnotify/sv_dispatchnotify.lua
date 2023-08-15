@@ -47,6 +47,7 @@ if pluginConfig.enabled then
     end
 
     local function SendMessage(type, source, message)
+        infoLog(("Sending message to %s: %s"):format(source, message))
         if type == "dispatch" then
             TriggerClientEvent("chat:addMessage", source, {args = {"^0[ ^2Dispatch ^0] ", message}})
         elseif type == pluginConfig.emergencyCallType then
@@ -291,6 +292,7 @@ if pluginConfig.enabled then
         debugLog("hello, unit attach! "..json.encode(call))
         local callerId = nil
         if call.dispatch.metaData ~= nil then
+            debugLog("set caller ID "..call.dispatch.metaData.callerPlayerId)
             callerId = call.dispatch.metaData.callerPlayerId
         end
         local officerId = GetSourceByApiId(unit.data.apiIds)
@@ -326,7 +328,7 @@ if pluginConfig.enabled then
         else
             debugLog("failed to find unit "..json.encode(unit))
         end
-        if pluginConfig.enableCallerNotify and callerId ~= nil and not call.dispatch.metaData.silentAlert then
+        if pluginConfig.enableCallerNotify and callerId ~= nil and call.dispatch.metaData.silentAlert == "false" then
             if pluginConfig.callerNotifyMethod == "chat" then
                 SendMessage("dispatch", callerId, pluginConfig.notifyMessage:gsub("{officer}", unit.data.name))
             elseif pluginConfig.callerNotifyMethod == "pnotify" then
@@ -339,6 +341,8 @@ if pluginConfig.enabled then
             elseif pluginConfig.callerNotifyMethod == "custom" then
                 TriggerEvent("SonoranCAD::dispatchnotify:UnitAttach", call.dispatch, callerId, officerId, unit.data.name)
             end
+        else
+            debugLog(("pluginConfig.enableCallerNotify == %s and %s ~= nil and not %s == 'false'"):format(pluginConfig.enableCallerNotify, callerId, call.dispatch.metaData.silentAlert))
         end
     end)
 
