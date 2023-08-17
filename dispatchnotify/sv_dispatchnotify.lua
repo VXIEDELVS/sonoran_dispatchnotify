@@ -47,7 +47,7 @@ if pluginConfig.enabled then
     end
 
     local function SendMessage(type, source, message)
-        infoLog(("Sending message to %s: %s"):format(source, message))
+        debugLog(("Sending message to %s: %s"):format(source, message))
         if type == "dispatch" then
             TriggerClientEvent("chat:addMessage", source, {args = {"^0[ ^2Dispatch ^0] ", message}})
         elseif type == pluginConfig.emergencyCallType then
