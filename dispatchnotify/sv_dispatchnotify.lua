@@ -291,7 +291,7 @@ if pluginConfig.enabled then
     AddEventHandler("SonoranCAD::pushevents:UnitAttach", function(call, unit)
         debugLog("hello, unit attach! "..json.encode(call))
         local callerId = nil
-        if call.dispatch.metaData ~= nil then
+        if call.dispatch.metaData ~= nil and call.dispatch.metaData.callerPlayerId ~= nil then
             debugLog("set caller ID "..call.dispatch.metaData.callerPlayerId)
             callerId = call.dispatch.metaData.callerPlayerId
         end
