@@ -227,8 +227,8 @@ if pluginConfig.enabled then
                     return
                 end
             end
-            if call.metaData ~= nil and call.metaData.useCallLocation == "true" and call.metaData.callPostal ~= nil then
-                postal = call.metaData.callPostal
+            if call.metaData ~= nil and call.metaData.useCallLocation == "true" and call.metaData.postal ~= nil then
+                postal = call.metaData.postal
             end
             local title = "OFFICER RESPONSE - "..call.callId
             if pluginConfig.callTitle ~= nil then
